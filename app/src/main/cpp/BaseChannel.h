@@ -1,0 +1,11 @@
+//
+// Created by 天涯路 on 2020-01-02.
+//
+
+#ifndef NEFFMPEGPLAYER_BASECHANNEL_H
+#define NEFFMPEGPLAYER_BASECHANNEL_H
+
+class BaseChannel {
+
+};
+#endif //NEFFMPEGPLAYER_BASECHANNEL_H
