@@ -5,6 +5,10 @@
 #ifndef NEFFMPEGPLAYER_NEFFMPEGPLAYER_H
 #define NEFFMPEGPLAYER_NEFFMPEGPLAYER_H
 
+#include <cstring>
+extern "C" {
+#include <libavformat/avformat.h>
+}
 
 class NeFFmpegPlayer {
 public:

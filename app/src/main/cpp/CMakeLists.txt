@@ -13,8 +13,9 @@ add_library( # Sets the name of the library.
 
 target_link_libraries( # Specifies the target library.
         native-lib
-        -W1,--start-group  # 以group的形式链接库避免链接顺序的问题
+        -Wl,--start-group  # (WL)以group的形式链接库避免链接顺序的问题
         avcodec avfilter avformat avutil swresample swscale
-        -W1,--end-group
+        -Wl,--end-group
+        log
         z
-        log) #liblog.so
+        )

@@ -1,10 +1,10 @@
 #include <jni.h>
 #include <string>
-
+#include "NeFFmpegPlayer.h"
 
 extern "C"{
 #include <libavutil/avutil.h>
-#include "NeFFmpegPlayer.h"
+
 }
 
 //#include "ffmpeg/include/libavutil/avutil.h"
