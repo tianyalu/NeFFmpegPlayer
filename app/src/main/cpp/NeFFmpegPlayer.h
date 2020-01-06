@@ -6,22 +6,37 @@
 #define NEFFMPEGPLAYER_NEFFMPEGPLAYER_H
 
 #include <cstring>
+#include <pthread.h>
+#include <android/log.h>
+#include "AudioChannel.h"
+#include "VideoChannel.h"
+#include "JniCallbackHelper.h"
+#include "macro.h"
+
 extern "C" {
 #include <libavformat/avformat.h>
 }
+
+#define LOGE(FORMAT,...) __android_log_print(ANDROID_LOG_ERROR, "sty", FORMAT, ## __VA_ARGS__);
 
 class NeFFmpegPlayer {
 public:
     NeFFmpegPlayer();
 
-    NeFFmpegPlayer(const char *string);
+    NeFFmpegPlayer(const char *string, JniCallbackHelper *pHelper);
 
     ~NeFFmpegPlayer();
 
     void prepare();
 
+    void _prepare();
+
 private:
-    char* data_source;
+    char* data_source = 0;
+    pthread_t pid_prepare;
+    AudioChannel *audio_channel = 0;
+    VideoChannel *video_channel = 0;
+    JniCallbackHelper *jni_callback_helper = 0;
 };
 
 

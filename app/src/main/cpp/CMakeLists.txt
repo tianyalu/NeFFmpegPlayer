@@ -16,6 +16,6 @@ target_link_libraries( # Specifies the target library.
         -Wl,--start-group  # (WL)以group的形式链接库避免链接顺序的问题
         avcodec avfilter avformat avutil swresample swscale
         -Wl,--end-group
-        log
         z
+        log #liblog.so
         )
