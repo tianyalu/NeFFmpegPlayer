@@ -50,12 +50,19 @@ public class NeFFmpegPlayer {
         }
     }
 
+    public void onError(String msg) {
+        if(onPreparedListener != null) {
+            onPreparedListener.onError(msg);
+        }
+    }
+
     public void setOnPreparedListener(OnPreparedListener onPreparedListener) {
         this.onPreparedListener = onPreparedListener;
     }
 
     interface OnPreparedListener{
         void onPrepared();
+        void onError(String msg);
     }
 
     //native 方法

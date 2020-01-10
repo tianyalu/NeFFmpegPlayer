@@ -43,14 +43,28 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
             }
+
+            @Override
+            public void onError(final String msg) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
         });
-        requestPermission();
+//        requestPermission();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        player.prepare();
+        try {
+            player.prepare();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

@@ -42,8 +42,7 @@ void NeFFmpegPlayer::prepare() {
      * 都不适合在主线程来操作
      */
 //    pthread_create(&pid_prepare, 0, task_prepare, 0);
-    pthread_create(&pid_prepare, 0, task_prepare, this); //把this传值给task_prepare
-
+    pthread_create(&pid_prepare, 0, task_prepare, this); //把this作为参数传值给task_prepare
 }
 
 void NeFFmpegPlayer::_prepare() {
@@ -65,6 +64,9 @@ void NeFFmpegPlayer::_prepare() {
         char buf[1024];
         av_strerror(ret, buf, 1024);
         LOGE("ERROR INFO1: %s", buf);
+        if(jni_callback_helper) {
+            jni_callback_helper->onError(THREAD_CHILD, buf);
+        }
         return;
     }
 
@@ -75,6 +77,9 @@ void NeFFmpegPlayer::_prepare() {
         char buf[1024];
         av_strerror(ret, buf, 1024);
         LOGE("ERROR INFO2: %s", buf);
+        if(jni_callback_helper) {
+            jni_callback_helper->onError(THREAD_CHILD, buf);
+        }
         return;
     }
 
@@ -91,6 +96,9 @@ void NeFFmpegPlayer::_prepare() {
             char buf[1024];
             av_strerror(ret, buf, 1024);
             LOGE("ERROR INFO3: %s", buf);
+            if(jni_callback_helper) {
+                jni_callback_helper->onError(THREAD_CHILD, buf);
+            }
             return;
         }
         //7.解码器上下文
@@ -100,6 +108,9 @@ void NeFFmpegPlayer::_prepare() {
             char buf[1024];
             av_strerror(ret, buf, 1024);
             LOGE("ERROR INFO4: %s", buf);
+            if(jni_callback_helper) {
+                jni_callback_helper->onError(THREAD_CHILD, buf);
+            }
             return;
         }
         //8.设置上下文参数
@@ -109,6 +120,9 @@ void NeFFmpegPlayer::_prepare() {
             char buf[1024];
             av_strerror(ret, buf, 1024);
             LOGE("ERROR INFO5: %s", buf);
+            if(jni_callback_helper) {
+                jni_callback_helper->onError(THREAD_CHILD, buf);
+            }
             return;
         }
         //9.打开解码器
@@ -118,6 +132,9 @@ void NeFFmpegPlayer::_prepare() {
             char buf[1024];
             av_strerror(ret, buf, 1024);
             LOGE("ERROR INFO6: %s", buf);
+            if(jni_callback_helper) {
+                jni_callback_helper->onError(THREAD_CHILD, buf);
+            }
             return;
         }
         //10.从编码器的参数中获取流类型
@@ -133,9 +150,11 @@ void NeFFmpegPlayer::_prepare() {
     //11.如果流中没有音频也没有视频
     if(!audio_channel && !video_channel) {
         //TODO 告诉用户错误信息
-        char buf[1024];
-        av_strerror(ret, buf, 1024);
+        char *buf = const_cast<char *>("数据源中午音频和视频流信息");
         LOGE("ERROR INFO7: %s", buf);
+        if(jni_callback_helper) {
+            jni_callback_helper->onError(THREAD_CHILD, buf);
+        }
         return;
     }
 
