@@ -17,5 +17,6 @@ target_link_libraries( # Specifies the target library.
         avcodec avfilter avformat avutil swresample swscale
         -Wl,--end-group
         z
-        log #liblog.so
+        log # liblog.so
+        android # libandroid.so
         )

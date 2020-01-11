@@ -64,8 +64,9 @@ void NeFFmpegPlayer::_prepare() {
         char buf[1024];
         av_strerror(ret, buf, 1024);
         LOGE("ERROR INFO1: %s", buf);
+        LOGE2("ERROR INFO ------");
         if(jni_callback_helper) {
-            jni_callback_helper->onError(THREAD_CHILD, buf);
+            jni_callback_helper->onError(THREAD_CHILD, buf, FFMPEG_CAN_NOT_OPEN_URL);
         }
         return;
     }
@@ -78,7 +79,7 @@ void NeFFmpegPlayer::_prepare() {
         av_strerror(ret, buf, 1024);
         LOGE("ERROR INFO2: %s", buf);
         if(jni_callback_helper) {
-            jni_callback_helper->onError(THREAD_CHILD, buf);
+            jni_callback_helper->onError(THREAD_CHILD, buf, FFMPEG_CAN_NOT_FIND_STREAMS);
         }
         return;
     }
@@ -97,7 +98,7 @@ void NeFFmpegPlayer::_prepare() {
             av_strerror(ret, buf, 1024);
             LOGE("ERROR INFO3: %s", buf);
             if(jni_callback_helper) {
-                jni_callback_helper->onError(THREAD_CHILD, buf);
+                jni_callback_helper->onError(THREAD_CHILD, buf, FFMPEG_FIND_DECODER_FAIL);
             }
             return;
         }
@@ -109,7 +110,7 @@ void NeFFmpegPlayer::_prepare() {
             av_strerror(ret, buf, 1024);
             LOGE("ERROR INFO4: %s", buf);
             if(jni_callback_helper) {
-                jni_callback_helper->onError(THREAD_CHILD, buf);
+                jni_callback_helper->onError(THREAD_CHILD, buf, FFMPEG_ALLOC_CODEC_CONTEXT_FAIL);
             }
             return;
         }
@@ -121,7 +122,7 @@ void NeFFmpegPlayer::_prepare() {
             av_strerror(ret, buf, 1024);
             LOGE("ERROR INFO5: %s", buf);
             if(jni_callback_helper) {
-                jni_callback_helper->onError(THREAD_CHILD, buf);
+                jni_callback_helper->onError(THREAD_CHILD, buf, FFMPEG_CODEC_CONTEXT_PARAMETERS_FAIL);
             }
             return;
         }
@@ -133,7 +134,7 @@ void NeFFmpegPlayer::_prepare() {
             av_strerror(ret, buf, 1024);
             LOGE("ERROR INFO6: %s", buf);
             if(jni_callback_helper) {
-                jni_callback_helper->onError(THREAD_CHILD, buf);
+                jni_callback_helper->onError(THREAD_CHILD, buf, FFMPEG_OPEN_DECODER_FAIL);
             }
             return;
         }
@@ -153,7 +154,7 @@ void NeFFmpegPlayer::_prepare() {
         char *buf = const_cast<char *>("数据源中午音频和视频流信息");
         LOGE("ERROR INFO7: %s", buf);
         if(jni_callback_helper) {
-            jni_callback_helper->onError(THREAD_CHILD, buf);
+            jni_callback_helper->onError(THREAD_CHILD, buf, FFMPEG_NOMEDIA);
         }
         return;
     }

@@ -17,8 +17,6 @@ extern "C" {
 #include <libavformat/avformat.h>
 }
 
-#define LOGE(FORMAT,...) __android_log_print(ANDROID_LOG_ERROR, "sty", FORMAT, ## __VA_ARGS__);
-
 class NeFFmpegPlayer {
 public:
     NeFFmpegPlayer();

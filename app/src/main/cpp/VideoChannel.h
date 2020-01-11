@@ -5,6 +5,7 @@
 #ifndef NEFFMPEGPLAYER_VIDEOCHANNEL_H
 #define NEFFMPEGPLAYER_VIDEOCHANNEL_H
 
+#include <queue>
 
 class VideoChannel {
 

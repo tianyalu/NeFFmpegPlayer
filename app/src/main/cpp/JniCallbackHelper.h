@@ -16,7 +16,7 @@ public:
 
     void onPrepared(int thread_mode);
 
-    void onError(int thread_mode, char* err_msg);
+    void onError(int thread_mode, char* err_msg, int err_code);
 
 private:
     JavaVM *javaVm = 0;

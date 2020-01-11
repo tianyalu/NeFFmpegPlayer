@@ -43,13 +43,15 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
             }
-
+        });
+        player.setOnErrorListener(new NeFFmpegPlayer.OnErrorListener() {
             @Override
-            public void onError(final String msg) {
+            public void onError(final String msg, final int errCode) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "errCode: " + errCode
+                                + "\nerrMsg: " + msg, Toast.LENGTH_SHORT).show();
                     }
                 });
             }

@@ -6,6 +6,7 @@ public class NeFFmpegPlayer {
     }
 
     private OnPreparedListener onPreparedListener;
+    private OnErrorListener onErrorListener;
 
     private String dataSource; //媒体源（文件路径/直播地址）
 
@@ -50,9 +51,9 @@ public class NeFFmpegPlayer {
         }
     }
 
-    public void onError(String msg) {
-        if(onPreparedListener != null) {
-            onPreparedListener.onError(msg);
+    public void onError(String msg, int errCode) {
+        if(onErrorListener != null) {
+            onErrorListener.onError(msg, errCode);
         }
     }
 
@@ -60,9 +61,16 @@ public class NeFFmpegPlayer {
         this.onPreparedListener = onPreparedListener;
     }
 
+    public void setOnErrorListener(OnErrorListener onErrorListener) {
+        this.onErrorListener = onErrorListener;
+    }
+
     interface OnPreparedListener{
         void onPrepared();
-        void onError(String msg);
+
+    }
+    interface OnErrorListener{
+        void onError(String msg, int errCode);
     }
 
     //native 方法
