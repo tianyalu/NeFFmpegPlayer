@@ -35,14 +35,16 @@ void JniCallbackHelper::onPrepared(int thread_mode) {
 }
 
 void JniCallbackHelper::onError(int thread_mode, char *err_msg) {
-    jstring errMsg = env->NewStringUTF(err_msg);
+    //jstring errMsg = env->NewStringUTF(err_msg); //不同线程的env是不同的，所以必须放到对应的线程中去
     if(thread_mode == THREAD_MAIN) {
+        jstring errMsg = env->NewStringUTF(err_msg);
         env->CallVoidMethod(instance, jmd_on_error, errMsg);
     }else {
         //env不支持跨线程
         JNIEnv *env_child;
         javaVm->AttachCurrentThread(&env_child, 0);
-        env_child->CallVoidMethod(instance, jmd_prepared, errMsg);
+        jstring errMsg = env_child->NewStringUTF(err_msg);
+        env_child->CallVoidMethod(instance, jmd_on_error, errMsg);
         javaVm->DetachCurrentThread();
     }
 }

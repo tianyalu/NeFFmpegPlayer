@@ -5,7 +5,6 @@
 
 extern "C"{
 #include <libavutil/avutil.h>
-
 }
 JavaVM *javaVm = 0;
 jint JNI_OnLoad(JavaVM *vm, void *args) { //onCreate

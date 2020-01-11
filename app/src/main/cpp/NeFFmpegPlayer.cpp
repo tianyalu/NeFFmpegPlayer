@@ -60,7 +60,7 @@ void NeFFmpegPlayer::_prepare() {
     int ret = avformat_open_input(&formatContext, data_source, 0, &dictionary);
     av_dict_free(&dictionary);
     if(ret) {
-        //TODO 告诉用户错误信息
+        //告诉用户错误信息
         char buf[1024];
         av_strerror(ret, buf, 1024);
         LOGE("ERROR INFO1: %s", buf);
@@ -73,7 +73,7 @@ void NeFFmpegPlayer::_prepare() {
     //2.查找流信息
     ret = avformat_find_stream_info(formatContext, 0);
     if(ret < 0) {
-        //TODO 告诉用户错误信息
+        //告诉用户错误信息
         char buf[1024];
         av_strerror(ret, buf, 1024);
         LOGE("ERROR INFO2: %s", buf);
@@ -92,7 +92,7 @@ void NeFFmpegPlayer::_prepare() {
         //6.通过流的编解码参数中的编解码ID，来获取当前流的解码器
         AVCodec* codec = avcodec_find_decoder(codecParameters->codec_id);
         if(!codec) {
-            //TODO 告诉用户错误信息
+            //告诉用户错误信息
             char buf[1024];
             av_strerror(ret, buf, 1024);
             LOGE("ERROR INFO3: %s", buf);
@@ -104,7 +104,7 @@ void NeFFmpegPlayer::_prepare() {
         //7.解码器上下文
         AVCodecContext* codecContext = avcodec_alloc_context3(codec);
         if(!codecContext) {
-            //TODO 告诉用户错误信息
+            //告诉用户错误信息
             char buf[1024];
             av_strerror(ret, buf, 1024);
             LOGE("ERROR INFO4: %s", buf);
@@ -116,7 +116,7 @@ void NeFFmpegPlayer::_prepare() {
         //8.设置上下文参数
         ret = avcodec_parameters_to_context(codecContext, codecParameters);
         if(ret < 0) {
-            //TODO 告诉用户错误信息
+            //告诉用户错误信息
             char buf[1024];
             av_strerror(ret, buf, 1024);
             LOGE("ERROR INFO5: %s", buf);
@@ -128,7 +128,7 @@ void NeFFmpegPlayer::_prepare() {
         //9.打开解码器
         ret = avcodec_open2(codecContext, codec, 0);
         if(ret) {
-            //TODO 告诉用户错误信息
+            //告诉用户错误信息
             char buf[1024];
             av_strerror(ret, buf, 1024);
             LOGE("ERROR INFO6: %s", buf);
@@ -149,7 +149,7 @@ void NeFFmpegPlayer::_prepare() {
 
     //11.如果流中没有音频也没有视频
     if(!audio_channel && !video_channel) {
-        //TODO 告诉用户错误信息
+        //告诉用户错误信息
         char *buf = const_cast<char *>("数据源中午音频和视频流信息");
         LOGE("ERROR INFO7: %s", buf);
         if(jni_callback_helper) {
