@@ -254,7 +254,7 @@ Java_com_sty_ne_ffmpegplayer_NeFFmpegPlayer_prepareNative(JNIEnv *env, jobject t
 }
 ```
 
-### 2.6 `NeFFmpegPlayer.cpp`文件（JNI调C++层）
+### 2.6 `NeFFmpegPlayer.cpp`文件（JNI C++实现层）
 ```c++
 #include "NeFFmpegPlayer.h"
 NeFFmpegPlayer::NeFFmpegPlayer(const char *data_source, JniCallbackHelper *jni_callback_helper) {
