@@ -11,6 +11,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.SurfaceView;
 import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String DIR_PATH = Environment.getExternalStorageDirectory()
             + File.separator + "sty" + File.separator + "input.mp4";
     private NeFFmpegPlayer player;
+    private SurfaceView surfaceView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,7 +32,10 @@ public class MainActivity extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
 
+        surfaceView = findViewById(R.id.surface_view);
+
         player = new NeFFmpegPlayer();
+        player.setSurfaceView(surfaceView);
         player.setDataSource(new File(DIR_PATH).getAbsolutePath());
         player.setOnPreparedListener(new NeFFmpegPlayer.OnPreparedListener() {
             @Override
@@ -42,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(MainActivity.this, "可以开始播放了", Toast.LENGTH_SHORT).show();
                     }
                 });
+                player.start();
             }
         });
         player.setOnErrorListener(new NeFFmpegPlayer.OnErrorListener() {

@@ -11,7 +11,6 @@
 #define LOGE(FORMAT,...) __android_log_print(ANDROID_LOG_ERROR, "sty", FORMAT, ## __VA_ARGS__);
 #define LOGE2(...) __android_log_print(ANDROID_LOG_ERROR, "NEPLAYER_NATIVE",__VA_ARGS__)
 
-
 //错误代码
 #define ERROR_CODE_OK 0
 #define ERROR_CODE_FFMPEG_PREPARE -1000

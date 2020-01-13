@@ -29,12 +29,22 @@ public:
 
     void _prepare();
 
+    void start();
+
+    void _start();
+
+    void setRenderCallback(RenderCallback renderCallback);
+
 private:
     char* data_source = 0;
     pthread_t pid_prepare;
+    pthread_t pid_start;
     AudioChannel *audio_channel = 0;
     VideoChannel *video_channel = 0;
     JniCallbackHelper *jni_callback_helper = 0;
+    AVFormatContext *formatContext = 0;
+    bool isPlaying;
+    RenderCallback renderCallback;
 };
 
 

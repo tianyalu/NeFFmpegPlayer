@@ -1,6 +1,10 @@
 package com.sty.ne.ffmpegplayer;
 
-public class NeFFmpegPlayer {
+import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+
+public class NeFFmpegPlayer implements SurfaceHolder.Callback {
     static {
         System.loadLibrary("native-lib");
     }
@@ -8,6 +12,7 @@ public class NeFFmpegPlayer {
     private OnPreparedListener onPreparedListener;
     private OnErrorListener onErrorListener;
 
+    private SurfaceHolder surfaceHolder;
     private String dataSource; //媒体源（文件路径/直播地址）
 
     public void setDataSource(String dataSource) {
@@ -65,6 +70,40 @@ public class NeFFmpegPlayer {
         this.onErrorListener = onErrorListener;
     }
 
+    public void setSurfaceView(SurfaceView surfaceView) {
+        if(null != surfaceHolder) {
+            surfaceHolder.removeCallback(this);
+        }
+        surfaceHolder = surfaceView.getHolder();
+        surfaceHolder.addCallback(this);
+    }
+
+    /**
+     * 画布创建好时回调
+     * @param holder
+     */
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+
+    }
+
+    /**
+     * 画布发生改变时回调
+     * @param holder
+     * @param format
+     * @param width
+     * @param height
+     */
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        setSurfaceNative(holder.getSurface());
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+
+    }
+
     interface OnPreparedListener{
         void onPrepared();
 
@@ -73,9 +112,11 @@ public class NeFFmpegPlayer {
         void onError(String msg, int errCode);
     }
 
+
     //native 方法
     private native void prepareNative(String dataSource);
     private native void startNative();
     private native void stopNative();
     private native void releaseNative();
+    private native void setSurfaceNative(Surface surface);
 }
