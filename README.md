@@ -2,9 +2,9 @@
 ## 一、前言
 ### 1.1 遇到问题可参考：
 [最新版本FFmpeg编译(基于v4.2.1)](https://www.jianshu.com/p/212c61cac89c)  
-[ffmpeg 编译&集成问题汇总](https://www.jianshu.com/p/c413873350a2)
-[JNI基础](https://www.jianshu.com/p/e3bcff7e3b24)
-[Android Native 视频绘制](https://www.jianshu.com/p/75f018f11eb9)
+[ffmpeg 编译&集成问题汇总](https://www.jianshu.com/p/c413873350a2)  
+[JNI基础](https://www.jianshu.com/p/e3bcff7e3b24)  
+[Android Native 视频绘制](https://www.jianshu.com/p/75f018f11eb9)  
 
 ### 1.2 集成第三方库
 头文件--编译的库
@@ -15,7 +15,7 @@
 [image](https://github.com/tianyalu/NeFFmpegPlayer/raw/master/show/FFmpeg_play_video_process.png)  
 #### 1.3.1 视频处理流程-代码实现
 
-[image](https://github.com/tianyalu/NeFFmpegPlayer/raw/master/show/FFmpeg_play_video_process_code.jpg)  
+[image](https://github.com/tianyalu/NeFFmpegPlayer/raw/master/show/ffmpeg_play_video_process_code.jpg)  
 #### 1.3.1 项目主要类结构关系
 
 [image](https://github.com/tianyalu/NeFFmpegPlayer/raw/master/show/project_class_structure.png)  
