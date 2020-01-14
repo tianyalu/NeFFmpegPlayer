@@ -85,8 +85,12 @@ void VideoChannel::video_play() {
         //TODO
         renderCallback(dst_data[0], codecContext->width, codecContext->height, dst_line_size[0]);
 
-        releaseAVFrame(&frame);
+//        releaseAVFrame(&frame);
     }
+    releaseAVFrame(&frame);
+    isPlaying = 0;
+    av_freep(&dst_data[0]);
+    sws_freeContext(sws_ctx);
 }
 
 /**

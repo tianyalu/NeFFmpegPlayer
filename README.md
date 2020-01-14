@@ -4,6 +4,7 @@
 [最新版本FFmpeg编译(基于v4.2.1)](https://www.jianshu.com/p/212c61cac89c)  
 [ffmpeg 编译&集成问题汇总](https://www.jianshu.com/p/c413873350a2)  
 [JNI基础](https://www.jianshu.com/p/e3bcff7e3b24)  
+[音视频基础知识](https://www.jianshu.com/p/a2c09daee428)  
 
 [RTMPDump](http://rtmpdump.mplayerhq.hu/)  
 [音视频基础知识](https://www.jianshu.com/p/a2c09daee428)  

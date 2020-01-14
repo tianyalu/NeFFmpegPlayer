@@ -45,6 +45,7 @@ public:
         }
     }
 
+    int isPlaying;
     int stream_index;
     SafeQueue<AVPacket *> packets;
     SafeQueue<AVFrame *> frames;

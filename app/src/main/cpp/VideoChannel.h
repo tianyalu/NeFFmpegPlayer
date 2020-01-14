@@ -27,7 +27,6 @@ public:
     void setRenderCallback(RenderCallback renderCallback);
 
 private:
-    int isPlaying;
     pthread_t pid_video_decode;
     pthread_t pid_video_play;
     RenderCallback renderCallback;
