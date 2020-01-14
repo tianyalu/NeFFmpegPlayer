@@ -184,7 +184,7 @@ void NeFFmpegPlayer::start() {
     if(video_channel) {
         video_channel->start();
     }
-    pthread_create(&pid_start, 0, task_prepare, this); //把this作为参数传值给task_prepare
+    pthread_create(&pid_start, 0, task_start, this); //把this作为参数传值给task_start
 }
 
 /**
@@ -197,10 +197,10 @@ void NeFFmpegPlayer::_start() {
         int ret = av_read_frame(formatContext, packet);
         if(!ret) {
             //读取成功 判断数据包类型是音频还是视频 根据流索引来判断
-            if(video_channel->stream_index == packet->stream_index) {
+            if(video_channel && video_channel->stream_index == packet->stream_index) {
                 //视频数据包
                 video_channel->packets.push(packet);
-            }else if(audio_channel->stream_index == packet->stream_index) {
+            }else if(audio_channel && audio_channel->stream_index == packet->stream_index) {
                 //音频数据包
             }
 
@@ -210,10 +210,9 @@ void NeFFmpegPlayer::_start() {
         }else {
             break;
         }
-        isPlaying = 0;
-//        video_channel->stop();
     }
-
+    isPlaying = 0;
+//  video_channel->stop();
 
 }
 

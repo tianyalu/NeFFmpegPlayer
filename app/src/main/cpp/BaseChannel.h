@@ -12,7 +12,9 @@ extern "C" {
 
 class BaseChannel {
 public:
-    BaseChannel(int streamIndex, AVCodecContext *codecContext) : stream_index(streamIndex){
+    //匿名构造函数
+    BaseChannel(int streamIndex, AVCodecContext *codecContext) : stream_index(streamIndex),
+                                                                 codecContext(codecContext){
         packets.setReleaseCallback(releaseAVPacket);
         frames.setReleaseCallback(releaseAVFrame);
     }

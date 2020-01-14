@@ -9,6 +9,18 @@
 ### 1.2 集成第三方库
 头文件--编译的库
 
+### 1.3 播放视频处理流程
+#### 1.3.1 视频处理流程
+
+[image](https://github.com/tianyalu/NeFFmpegPlayer/raw/master/show/FFmpeg_play_video_process.png)  
+#### 1.3.1 视频处理流程-代码实现
+
+[image](https://github.com/tianyalu/NeFFmpegPlayer/raw/master/show/FFmpeg_play_video_process_code.jpg)  
+#### 1.3.1 项目主要类结构关系
+
+[image](https://github.com/tianyalu/NeFFmpegPlayer/raw/master/show/project_class_structure.png)  
+
+
 ## 二、实操
 ### 2.1 app模块下的`build.gradle`文件
 ```groovy
@@ -68,6 +80,7 @@ target_link_libraries( # Specifies the target library.
         -Wl,--end-group
         z
         log #liblog.so
+        android # libandroid.so
         )
 ```
 
@@ -78,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String DIR_PATH = Environment.getExternalStorageDirectory()
             + File.separator + "sty" + File.separator + "input.mp4";
     private NeFFmpegPlayer player;
+    private SurfaceView surfaceView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,7 +100,10 @@ public class MainActivity extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
 
+        surfaceView = findViewById(R.id.surface_view);
+
         player = new NeFFmpegPlayer();
+        player.setSurfaceView(surfaceView);
         player.setDataSource(new File(DIR_PATH).getAbsolutePath());
         player.setOnPreparedListener(new NeFFmpegPlayer.OnPreparedListener() {
             @Override
@@ -98,19 +115,22 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(MainActivity.this, "可以开始播放了", Toast.LENGTH_SHORT).show();
                     }
                 });
+                player.start();
             }
-
+        });
+        player.setOnErrorListener(new NeFFmpegPlayer.OnErrorListener() {
             @Override
-            public void onError(final String msg) {
+            public void onError(final String msg, final int errCode) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "errCode: " + errCode
+                                + "\nerrMsg: " + msg, Toast.LENGTH_SHORT).show();
                     }
                 });
             }
         });
-//        requestPermission(); //测试错误回调
+        requestPermission();
     }
 
     @Override
@@ -154,13 +174,15 @@ public class MainActivity extends AppCompatActivity {
 ```
 ### 2.4 `NeFFmpegPlayer.java`文件（Java调JNI层）
 ```java
-public class NeFFmpegPlayer {
+public class NeFFmpegPlayer implements SurfaceHolder.Callback {
     static {
         System.loadLibrary("native-lib");
     }
 
     private OnPreparedListener onPreparedListener;
+    private OnErrorListener onErrorListener;
 
+    private SurfaceHolder surfaceHolder;
     private String dataSource; //媒体源（文件路径/直播地址）
 
     public void setDataSource(String dataSource) {
@@ -204,9 +226,9 @@ public class NeFFmpegPlayer {
         }
     }
 
-    public void onError(String msg) {
-        if(onPreparedListener != null) {
-            onPreparedListener.onError(msg);
+    public void onError(String msg, int errCode) {
+        if(onErrorListener != null) {
+            onErrorListener.onError(msg, errCode);
         }
     }
 
@@ -214,16 +236,59 @@ public class NeFFmpegPlayer {
         this.onPreparedListener = onPreparedListener;
     }
 
+    public void setOnErrorListener(OnErrorListener onErrorListener) {
+        this.onErrorListener = onErrorListener;
+    }
+
+    public void setSurfaceView(SurfaceView surfaceView) {
+        if(null != surfaceHolder) {
+            surfaceHolder.removeCallback(this);
+        }
+        surfaceHolder = surfaceView.getHolder();
+        surfaceHolder.addCallback(this);
+    }
+
+    /**
+     * 画布创建好时回调
+     * @param holder
+     */
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+
+    }
+
+    /**
+     * 画布发生改变时回调
+     * @param holder
+     * @param format
+     * @param width
+     * @param height
+     */
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        setSurfaceNative(holder.getSurface());
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+
+    }
+
     interface OnPreparedListener{
         void onPrepared();
-        void onError(String msg);
+
     }
+    interface OnErrorListener{
+        void onError(String msg, int errCode);
+    }
+
 
     //native 方法
     private native void prepareNative(String dataSource);
     private native void startNative();
     private native void stopNative();
     private native void releaseNative();
+    private native void setSurfaceNative(Surface surface);
 }
 ```
 
@@ -232,15 +297,62 @@ public class NeFFmpegPlayer {
 #include <jni.h>
 #include <string>
 #include "NeFFmpegPlayer.h"
-#include "JniCallbackHelper.h"
+#include <android/native_window_jni.h>
 
 extern "C"{
 #include <libavutil/avutil.h>
 }
+
 JavaVM *javaVm = 0;
+NeFFmpegPlayer *player = 0;
+ANativeWindow *window = 0;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER; //互斥锁--静态初始化
+
 jint JNI_OnLoad(JavaVM *vm, void *args) { //onCreate
     javaVm = vm;
     return JNI_VERSION_1_6;
+}
+
+//#include "ffmpeg/include/libavutil/avutil.h"
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_sty_ne_ffmpegplayer_MainActivity_stringFromJNI(
+        JNIEnv *env,
+        jobject /* this */) {
+    std::string hello = "Hello from C++";
+//    return env->NewStringUTF(hello.c_str());
+    return env->NewStringUTF(av_version_info());
+}
+
+void renderFrame(uint8_t *src_data, int width, int height, int src_line_size) {
+    pthread_mutex_lock(&mutex);
+    if(!window) {
+        pthread_mutex_unlock(&mutex);
+        return;
+    }
+    //设置窗口属性
+    ANativeWindow_setBuffersGeometry(window, width, height, WINDOW_FORMAT_RGBA_8888);
+
+    ANativeWindow_Buffer window_buffer;
+    if(ANativeWindow_lock(window, &window_buffer, 0)) {
+        ANativeWindow_release(window);
+        window = 0;
+        return;
+    }
+
+    //填充rgb数据给dst_data
+    uint8_t *dst_data = static_cast<uint8_t *>(window_buffer.bits);
+    int dst_line_size = window_buffer.stride * 4;
+    for (int i = 0; i < window_buffer.height; ++i) {
+        //逐行拷贝:从src所指的内存地址的起始位置开始拷贝n个字节到dest所指的内存地址的起始位置中
+        //第一个参数：目的地址
+        //第二个参数：源地址
+        //第三个参数：所需要复制的字节数
+        memcpy(dst_data + i * dst_line_size, src_data + i * src_line_size, dst_line_size);
+    }
+    ANativeWindow_unlockAndPost(window);
+
+    pthread_mutex_unlock(&mutex);
 }
 
 extern "C"
@@ -249,9 +361,35 @@ Java_com_sty_ne_ffmpegplayer_NeFFmpegPlayer_prepareNative(JNIEnv *env, jobject t
                                                           jstring data_source_) {
     const char* data_source = env->GetStringUTFChars(data_source_, 0);
     JniCallbackHelper *jni_callback_helper = new JniCallbackHelper(javaVm, env, thiz);
-    NeFFmpegPlayer *player = new NeFFmpegPlayer(data_source, jni_callback_helper);
+    player = new NeFFmpegPlayer(data_source, jni_callback_helper);
+    player->setRenderCallback(renderFrame);
     player->prepare();
     env->ReleaseStringUTFChars(data_source_, data_source);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_sty_ne_ffmpegplayer_NeFFmpegPlayer_startNative(JNIEnv *env, jobject thiz) {
+    if(player) {
+        player->start();
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_sty_ne_ffmpegplayer_NeFFmpegPlayer_setSurfaceNative(JNIEnv *env, jobject thiz,
+                                                             jobject surface) {
+    pthread_mutex_lock(&mutex);
+    //先释放之前的窗口
+    if(window) {
+        ANativeWindow_release(window);
+        window = 0;
+    }
+    //创建新的窗口用于视频显示
+    window = ANativeWindow_fromSurface(env, surface);
+
+    pthread_mutex_unlock(&mutex);
+
 }
 ```
 

@@ -65,6 +65,7 @@ void VideoChannel::video_play() {
 
     SwsContext *sws_ctx = sws_getContext(codecContext->width, codecContext->height, codecContext->pix_fmt,
             codecContext->width, codecContext->height, AV_PIX_FMT_RGBA, SWS_BILINEAR, NULL, NULL, NULL);
+    //申请图像内存
     av_image_alloc(dst_data, dst_line_size, codecContext->width, codecContext->height, AV_PIX_FMT_RGBA, 1);
     while (isPlaying) {
         int ret = frames.pop(frame);

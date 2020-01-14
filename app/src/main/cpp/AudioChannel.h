@@ -5,8 +5,6 @@
 #ifndef NEFFMPEGPLAYER_AUDIOCHANNEL_H
 #define NEFFMPEGPLAYER_AUDIOCHANNEL_H
 
-
-#include <libavcodec/avcodec.h>
 #include "BaseChannel.h"
 
 class AudioChannel : public BaseChannel{
