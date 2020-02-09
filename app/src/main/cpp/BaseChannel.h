@@ -7,14 +7,18 @@
 
 extern "C" {
 #include <libavcodec/avcodec.h>
+#include <libavutil/time.h>
 };
+
 #include "safe_queue.h"
 
 class BaseChannel {
 public:
     //匿名构造函数
-    BaseChannel(int streamIndex, AVCodecContext *codecContext) : stream_index(streamIndex),
-                                                                 codecContext(codecContext){
+    BaseChannel(int streamIndex, AVCodecContext *codecContext, AVRational time_base)
+            : stream_index(streamIndex),
+              codecContext(codecContext),
+              time_base(time_base) {
         packets.setReleaseCallback(releaseAVPacket);
         frames.setReleaseCallback(releaseAVFrame);
     }
@@ -28,7 +32,7 @@ public:
      * @param packet
      */
     static void releaseAVPacket(AVPacket **packet) {
-        if(*packet) {
+        if (*packet) {
             av_packet_free(packet);
             *packet = 0;
         }
@@ -39,7 +43,7 @@ public:
      * @param frame
      */
     static void releaseAVFrame(AVFrame **frame) {
-        if(*frame) {
+        if (*frame) {
             av_frame_free(frame);
             *frame = 0;
         }
@@ -50,5 +54,8 @@ public:
     SafeQueue<AVPacket *> packets;
     SafeQueue<AVFrame *> frames;
     AVCodecContext *codecContext = 0;
+    AVRational time_base;
+    double audio_time;
 };
+
 #endif //NEFFMPEGPLAYER_BASECHANNEL_H

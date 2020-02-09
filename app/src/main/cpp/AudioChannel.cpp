@@ -4,8 +4,9 @@
 
 #include "AudioChannel.h"
 
-AudioChannel::AudioChannel(int stream_index, AVCodecContext * codecContext) : BaseChannel(
-        stream_index, codecContext) {
+AudioChannel::AudioChannel(int streamIndex, AVCodecContext *codecContext, AVRational time_base)
+        : BaseChannel(
+        streamIndex, codecContext, time_base) {
     out_sample_rate = 44100;
     // 16 bits = 2字节
 
@@ -35,13 +36,23 @@ void *task_audio_decode(void *args) {
 void AudioChannel::audio_decode() {
     AVPacket *packet = 0;
     while(isPlaying) {
+        /**
+        * 泄漏点2：控制 AVFrame队列
+        */
+        //休眠10微秒,等待队列中的数据被消费
+        if(isPlaying && frames.size() > 100) {
+            av_usleep(10 * 1000); //microseconds 微秒
+            continue;
+        }
         //从队列中取音频压缩数据包 AVPacket
         int ret = packets.pop(packet);
+        //注意：取出 packet 后 packet 仍然占着内存
         if(!isPlaying) {
-            //如果停止播放了，跳出循环
+            //如果停止播放了，跳出循环，释放packet
             break;
         }
         if(!ret) {
+            //给解码器发送packet失败
             continue;
         }
         //把数据包发给解码器进行解码
@@ -51,12 +62,17 @@ void AudioChannel::audio_decode() {
         }else if(ret != 0) {
             break;
         }
+        releaseAVPacket(&packet); //packet 不需要了，可以释放掉
+
         //发送一个数据包成功
         AVFrame *avFrame = av_frame_alloc();
         ret = avcodec_receive_frame(codecContext, avFrame);
         if(ret == AVERROR(EAGAIN)) {
+            //重来
+            releaseAVFrame(&avFrame); //重来也可以丢掉自己申请的内存
             continue;
         }else if( ret != 0) {
+            releaseAVFrame(&avFrame);
             break;
         }
         //成功解码一个数据包，得到解码后的数据包 AVFrame，加入队列
@@ -116,6 +132,9 @@ int AudioChannel::getPCM() {
 
         // 重采样后pcm数据大小 = 每个声道的样本数 * 声道数 * 一个样本的大小
         pcm_size = samples_per_channel * out_sample_size * out_channels;
+
+        //frame->best_effort_timestamp * timebase;
+        audio_time = frame->best_effort_timestamp * av_q2d(time_base);
         break;
     }
     releaseAVFrame(&frame);

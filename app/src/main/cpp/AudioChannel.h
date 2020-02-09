@@ -16,7 +16,7 @@ extern "C" {
 class AudioChannel : public BaseChannel{
 
 public:
-    AudioChannel(int streamIndex, AVCodecContext *codecContext);
+    AudioChannel(int streamIndex, AVCodecContext *codecContext, AVRational time_base);
 
     virtual ~AudioChannel();
 

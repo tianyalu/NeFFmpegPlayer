@@ -5,9 +5,41 @@
 
 #include "VideoChannel.h"
 
-VideoChannel::VideoChannel(int stream_index, AVCodecContext *codecContext) : BaseChannel(
-        stream_index, codecContext) {
+/**
+ * 还未解码的帧，要区分关键帧
+ * @param q
+ */
+void dropAVPacket(queue<AVPacket *> &q) {
+    while(!q.empty()) {
+        AVPacket *packet = q.front(); //拿到队首元素的引用，此时并未出队列
+        if(packet->flags != AV_PKT_FLAG_KEY) {
+            //非关键帧才丢
+            BaseChannel::releaseAVPacket(&packet);
+            q.pop(); //队首元素出队列
+        }else {
+            break;
+        }
+    }
+}
 
+/**
+ * 已经解过码的帧
+ * @param q
+ */
+void dropAVFrame(queue<AVFrame *> &q) {
+    if(!q.empty()) {
+        AVFrame *frame = q.front();
+        BaseChannel::releaseAVFrame(&frame);
+        q.pop();
+    }
+}
+
+VideoChannel::VideoChannel(int stream_index, AVCodecContext *pContext, AVRational time_base, int fps)
+        : BaseChannel(
+        stream_index, pContext, time_base) {
+    this->fps = fps;
+    packets.setSyncCallback(dropAVPacket);
+    frames.setSyncCallback(dropAVFrame);
 }
 
 void *task_video_decode(void *args) {
@@ -17,16 +49,30 @@ void *task_video_decode(void *args) {
     return 0; //一定要return ！！！
 }
 
+/**
+ * 消费
+ * 消费速度比生产速度慢
+ */
 void VideoChannel::video_decode() {
     AVPacket *packet = 0;
     while(isPlaying) {
+        /**
+         * 泄漏点2：控制 AVFrame队列
+         */
+        //休眠10微秒,等待队列中的数据被消费
+        if(isPlaying && frames.size() > 100) {
+            av_usleep(10 * 1000); //microseconds 微秒
+            continue;
+        }
         //从队列中取视频压缩数据包 AVPacket
         int ret = packets.pop(packet);
+        //注意：取出packet后packet仍然占着内存
         if(!isPlaying) {
-            //如果停止播放了，跳出循环
+            //如果停止播放了，跳出循环，释放packet
             break;
         }
         if(!ret) {
+            //给解码器发送packet失败
             continue;
         }
         //把数据包发给解码器进行解码
@@ -36,12 +82,17 @@ void VideoChannel::video_decode() {
         }else if(ret != 0) {
             break;
         }
+        releaseAVPacket(&packet); //packet 不需要了，可以释放掉
+
         //发送一个数据包成功
         AVFrame *avFrame = av_frame_alloc();
         ret = avcodec_receive_frame(codecContext, avFrame);
         if(ret == AVERROR(EAGAIN)) {
+            //重来
+            releaseAVFrame(&avFrame); //重来也可以丢掉自己申请的内存
             continue;
         }else if( ret != 0) {
+            releaseAVFrame(&avFrame);
             break;
         }
         //成功解码一个数据包，得到解码后的数据包 AVFrame，加入队列
@@ -79,13 +130,48 @@ void VideoChannel::video_play() {
         //格式转换 yuv --> rgba
         sws_scale(sws_ctx, frame->data, frame->linesize, 0, codecContext->height, dst_data, dst_line_size);
 
+
+        //extra_delay = repeat_pict / (2*fps)
+        double extra_delay = frame->repeat_pict / (2 * fps); //每帧的额外延时时间
+        double avg_delay = 1.0 / fps; //根据FPS得到的平均延时时间
+        double real_delay = extra_delay + avg_delay;
+
+        //视频时间
+        double video_time = frame->best_effort_timestamp * av_q2d(time_base);
+
+        if(!audio_channel) { //没音频
+            av_usleep(real_delay *  1000000);
+        } else {
+            //以音频的时间为基准
+            double audio_time = audio_channel->audio_time;
+            double time_diff = video_time - audio_time;
+            if(time_diff > 0) {
+                //视频比音频快，等音频
+                if(time_diff > 1) { //拖动进度条导致time_diff过大的情况
+                    av_usleep((real_delay * 2) * 1000000); //慢慢追
+                }else {
+                    av_usleep((real_delay + time_diff) * 1000000);
+                }
+            }else if(time_diff < 0) {
+                //视频比音频慢，追音频（丢帧）
+                //画面延时了
+                if(fabs(time_diff) >= 0.05 ) {
+                    //packets.sync(); //todo 目前实测该种方式存在花屏和卡顿现象
+                    frames.sync();
+                    continue;
+                }
+            }else {
+                //完美同步
+                LOGE2("完美同步");
+            }
+        }
+
         //dst_data : rgba格式的图像数据
         //宽+高+linesize
         //渲染（绘制）
-        //TODO
         renderCallback(dst_data[0], codecContext->width, codecContext->height, dst_line_size[0]);
 
-//        releaseAVFrame(&frame);
+        releaseAVFrame(&frame); //内存泄漏的关键原因之一
     }
     releaseAVFrame(&frame);
     isPlaying = 0;
@@ -108,6 +194,10 @@ void VideoChannel::start() {
 
 void VideoChannel::setRenderCallback(RenderCallback renderCallback) {
     this->renderCallback = renderCallback;
+}
+
+void VideoChannel::setAudioChannel(AudioChannel *audio_channel) {
+    this->audio_channel = audio_channel;
 }
 
 

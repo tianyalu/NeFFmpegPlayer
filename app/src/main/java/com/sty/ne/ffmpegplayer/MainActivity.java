@@ -21,7 +21,8 @@ import java.io.File;
 public class MainActivity extends AppCompatActivity {
     private static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
     private static final String DIR_PATH = Environment.getExternalStorageDirectory()
-            + File.separator + "sty" + File.separator + "input.mp4";
+//            + File.separator + "sty" + File.separator + "input.mp4";
+            + File.separator + "视频/dance/sandymandy" + File.separator + "[牛人]Whatcha Doin' Today_超清.mp4";
     private NeFFmpegPlayer player;
     private SurfaceView surfaceView;
 

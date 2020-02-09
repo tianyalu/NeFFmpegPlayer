@@ -5,6 +5,7 @@
 
 
 
+
 #include "NeFFmpegPlayer.h"
 
 NeFFmpegPlayer::NeFFmpegPlayer() {
@@ -141,13 +142,23 @@ void NeFFmpegPlayer::_prepare() {
             return;
         }
         //10.从编解码器的参数中获取流类型
+        AVRational time_base = stream->time_base;
         if (codecParameters->codec_type == AVMEDIA_TYPE_VIDEO) {
+            if(stream->disposition & AV_DISPOSITION_ATTACHED_PIC) {
+                //如果这个标记是附加图
+                //过滤当前的封面视频流
+                continue;
+            }
             //视频流
-            video_channel = new VideoChannel(i, codecContext);
+            AVRational frame_rate = stream->avg_frame_rate;
+            //转FPS
+            int fps = av_q2d(frame_rate);
+
+            video_channel = new VideoChannel(i, codecContext, time_base, fps);
             video_channel->setRenderCallback(renderCallback);
         }else if (codecParameters->codec_type == AVMEDIA_TYPE_AUDIO) {
             //音频流
-            audio_channel = new AudioChannel(i, codecContext);
+            audio_channel = new AudioChannel(i, codecContext, time_base);
         }
     } //end for
 
@@ -182,6 +193,7 @@ void *task_start(void *args) {
 void NeFFmpegPlayer::start() {
     isPlaying = 1;
     if(video_channel) {
+        video_channel->setAudioChannel(audio_channel);
         video_channel->start();
     }
     if(audio_channel) {
@@ -191,11 +203,29 @@ void NeFFmpegPlayer::start() {
 }
 
 /**
+ * AVPacket 生产
  * 真正开始播放
  * （读取 音视频包 加入相应的音频/视频队列）
  */
 void NeFFmpegPlayer::_start() {
+
     while (isPlaying) {
+        /**
+        * 泄漏点1：控制AVPacket队列大小，等待队列中的数据被消费
+        */
+        if( (video_channel && video_channel->packets.size() > 100) ||
+                (audio_channel && audio_channel->packets.size() > 100) ) {
+            //休眠10微秒
+            av_usleep(10 * 1000); //microseconds 微秒
+            continue;
+        }
+
+//        if(audio_channel && audio_channel->packets.size() > 100) {
+//            //休眠10微秒
+//            av_usleep(10 * 1000); //microseconds 微秒
+//            continue;
+//        }
+
         AVPacket *packet = av_packet_alloc();
         int ret = av_read_frame(formatContext, packet);
         if(!ret) {

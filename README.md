@@ -21,12 +21,25 @@
 #### 1.3.1 视频处理流程
 
 ![image](https://github.com/tianyalu/NeFFmpegPlayer/raw/master/show/FFmpeg_play_video_process.png)  
-#### 1.3.1 视频处理流程-代码实现
+#### 1.3.2 视频处理流程-代码实现
 
 ![image](https://github.com/tianyalu/NeFFmpegPlayer/raw/master/show/ffmpeg_play_video_process_code.jpg)  
-#### 1.3.1 项目主要类结构关系
+#### 1.3.3 项目主要类结构关系
 
 ![image](https://github.com/tianyalu/NeFFmpegPlayer/raw/master/show/project_class_structure.png)  
+
+### 1.4 音视频同步
+同步方式：你追我赶。
+三种方案：
+* 以音频时间为基准（通常采用的方案）
+* 以视频时间为基准
+* 以外部时间为基准（需要自己维护）
+
+### 1.5 视频按实际帧率播放
+
+### 1.6 内存泄漏解决
+#### 1.6.1 控制队列大小
+控制packets队列大小，但是队列中的数据不能随意丢弃，然后得队列中的数据被消费完。
 
 
 ## 二、实操
