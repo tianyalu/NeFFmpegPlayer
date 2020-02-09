@@ -11,6 +11,7 @@ extern "C" {
 };
 
 #include "safe_queue.h"
+#include "JniCallbackHelper.h"
 
 class BaseChannel {
 public:
@@ -49,6 +50,10 @@ public:
         }
     }
 
+    void setJniCallbackHelper(JniCallbackHelper *jni_callback_helper) {
+        this->jni_callback_helper = jni_callback_helper;
+    }
+
     int isPlaying;
     int stream_index;
     SafeQueue<AVPacket *> packets;
@@ -56,6 +61,7 @@ public:
     AVCodecContext *codecContext = 0;
     AVRational time_base;
     double audio_time;
+    JniCallbackHelper *jni_callback_helper = 0;
 };
 
 #endif //NEFFMPEGPLAYER_BASECHANNEL_H

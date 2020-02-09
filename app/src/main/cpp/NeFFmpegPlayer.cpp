@@ -19,13 +19,17 @@ NeFFmpegPlayer::NeFFmpegPlayer(const char *data_source, JniCallbackHelper *jni_c
     strcpy(this->data_source, data_source);
 
     this->jni_callback_helper = jni_callback_helper;
+    pthread_mutex_init(&seek_mutex, 0);
 }
 
 NeFFmpegPlayer::~NeFFmpegPlayer() {
-    if (data_source) {
-        delete data_source;
-        data_source = 0;
-    }
+//    if (data_source) {
+//        delete data_source;
+//        data_source = 0;
+//    }
+    DELETE(data_source);
+    DELETE(jni_callback_helper);
+    pthread_mutex_destroy(&seek_mutex);
 }
 
 void *task_prepare(void *args) {
@@ -72,6 +76,8 @@ void NeFFmpegPlayer::_prepare() {
         }
         return;
     }
+
+    mDuration = formatContext->duration / AV_TIME_BASE;
 
     //2.查找流信息
     ret = avformat_find_stream_info(formatContext, 0);
@@ -144,21 +150,27 @@ void NeFFmpegPlayer::_prepare() {
         //10.从编解码器的参数中获取流类型
         AVRational time_base = stream->time_base;
         if (codecParameters->codec_type == AVMEDIA_TYPE_VIDEO) {
+            //视频流
             if(stream->disposition & AV_DISPOSITION_ATTACHED_PIC) {
                 //如果这个标记是附加图
                 //过滤当前的封面视频流
                 continue;
             }
-            //视频流
             AVRational frame_rate = stream->avg_frame_rate;
             //转FPS
             int fps = av_q2d(frame_rate);
 
             video_channel = new VideoChannel(i, codecContext, time_base, fps);
             video_channel->setRenderCallback(renderCallback);
+            if(mDuration != 0) { //直播不需要回调进度
+                video_channel->setJniCallbackHelper(jni_callback_helper);
+            }
         }else if (codecParameters->codec_type == AVMEDIA_TYPE_AUDIO) {
             //音频流
             audio_channel = new AudioChannel(i, codecContext, time_base);
+            if(mDuration != 0) { //直播不需要回调进度
+                audio_channel->setJniCallbackHelper(jni_callback_helper);
+            }
         }
     } //end for
 
@@ -246,12 +258,94 @@ void NeFFmpegPlayer::_start() {
         }
     }
     isPlaying = 0;
-//  video_channel->stop();
+    video_channel->stop();
+    audio_channel->stop();
 
 }
 
 void NeFFmpegPlayer::setRenderCallback(RenderCallback renderCallback) {
     this->renderCallback = renderCallback;
+}
+
+int NeFFmpegPlayer::getDuration() {
+    return mDuration;
+}
+
+/**
+ * 指定时间点重新开始播放
+ * @param progress 要seek的时间戳
+ */
+void NeFFmpegPlayer::seek(int progress) {
+    if(progress < 0 || progress > mDuration) {
+        return;
+    }
+    if(!audio_channel && !video_channel) {
+        return;
+    }
+    if(!formatContext) {
+        return;
+    }
+    pthread_mutex_lock(&seek_mutex);
+
+    int ret = av_seek_frame(formatContext, -1, progress * AV_TIME_BASE, AVSEEK_FLAG_BACKWARD);
+    if(ret < 0) {
+        //告诉用户错误信息
+        char buf[1024];
+        av_strerror(ret, buf, 1024);
+        LOGE("ERROR INFO6: %s", buf);
+        if(jni_callback_helper) {
+            jni_callback_helper->onError(THREAD_CHILD, buf, FFMPEG_SEEK_FAIL);
+        }
+        return;
+    }
+
+    //4个队列可能存在未消费数据，需要 reset
+    if(audio_channel) {
+        audio_channel->packets.setWork(0);
+        audio_channel->frames.setWork(0);
+        audio_channel->packets.clear();
+        audio_channel->frames.clear();
+        audio_channel->packets.setWork(1);
+        audio_channel->frames.setWork(1);
+    }
+    if(video_channel) {
+        video_channel->packets.setWork(0);
+        video_channel->frames.setWork(0);
+        video_channel->packets.clear();
+        video_channel->frames.clear();
+        video_channel->packets.setWork(1);
+        video_channel->frames.setWork(1);
+    }
+
+    pthread_mutex_unlock(&seek_mutex);
+}
+
+void *task_stop(void *args) {
+    NeFFmpegPlayer *player = static_cast<NeFFmpegPlayer *>(args);
+    player->isPlaying = 0;
+    //pthread_join 引发anr
+    pthread_join(player->pid_prepare, 0);
+    pthread_join(player->pid_start, 0);
+    if(player->formatContext) {
+        avformat_close_input(&player->formatContext);
+        avformat_free_context(player->formatContext);
+        player->formatContext = 0;
+    }
+    DELETE(player->audio_channel);
+    DELETE(player->video_channel);
+
+    return 0; //一定要return！
+
+}
+void NeFFmpegPlayer::stop() {
+    jni_callback_helper = 0;
+    if(video_channel) {
+        video_channel->jni_callback_helper = 0;
+    }
+    if(audio_channel) {
+        audio_channel->jni_callback_helper = 0;
+    }
+    pthread_create(&pid_stop, 0, task_stop, this);
 }
 
 

@@ -11,6 +11,7 @@ public class NeFFmpegPlayer implements SurfaceHolder.Callback {
 
     private OnPreparedListener onPreparedListener;
     private OnErrorListener onErrorListener;
+    private OnProgressListener onProgressListener;
 
     private SurfaceHolder surfaceHolder;
     private String dataSource; //媒体源（文件路径/直播地址）
@@ -48,6 +49,17 @@ public class NeFFmpegPlayer implements SurfaceHolder.Callback {
     }
 
     /**
+     * 获取视频总时长
+     * @return
+     */
+    public int getDuration() {
+        return getDurationNative();
+    }
+
+    public void seek(int playProgress) {
+        seekNative(playProgress);
+    }
+    /**
      * 给JNI反射调用的
      */
     public void onPrepared() {
@@ -62,12 +74,25 @@ public class NeFFmpegPlayer implements SurfaceHolder.Callback {
         }
     }
 
+    /**
+     * 给JNI反射调用的
+     */
+    public void onProgress(int progress) {
+        if(null != this.onProgressListener) {
+            this.onProgressListener.onProgress(progress);
+        }
+    }
+
     public void setOnPreparedListener(OnPreparedListener onPreparedListener) {
         this.onPreparedListener = onPreparedListener;
     }
 
     public void setOnErrorListener(OnErrorListener onErrorListener) {
         this.onErrorListener = onErrorListener;
+    }
+
+    public void setOnProgressListener(OnProgressListener onProgressListener) {
+        this.onProgressListener = onProgressListener;
     }
 
     public void setSurfaceView(SurfaceView surfaceView) {
@@ -112,6 +137,9 @@ public class NeFFmpegPlayer implements SurfaceHolder.Callback {
         void onError(String msg, int errCode);
     }
 
+    interface OnProgressListener{
+        void onProgress(int progress);
+    }
 
     //native 方法
     private native void prepareNative(String dataSource);
@@ -119,4 +147,6 @@ public class NeFFmpegPlayer implements SurfaceHolder.Callback {
     private native void stopNative();
     private native void releaseNative();
     private native void setSurfaceNative(Surface surface);
+    private native int getDurationNative();
+    private native void seekNative(int playProgress);
 }

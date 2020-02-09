@@ -19,6 +19,8 @@ extern "C" {
 }
 
 class NeFFmpegPlayer {
+    friend void *task_stop(void *args);
+
 public:
     NeFFmpegPlayer();
 
@@ -36,16 +38,25 @@ public:
 
     void setRenderCallback(RenderCallback renderCallback);
 
+    int getDuration();
+
+    void seek(int i);
+
+    void stop();
+
 private:
     char* data_source = 0;
     pthread_t pid_prepare;
     pthread_t pid_start;
+    pthread_t pid_stop;
     AudioChannel *audio_channel = 0;
     VideoChannel *video_channel = 0;
     JniCallbackHelper *jni_callback_helper = 0;
     AVFormatContext *formatContext = 0;
     bool isPlaying;
+    int mDuration;
     RenderCallback renderCallback;
+    pthread_mutex_t seek_mutex;
 };
 
 

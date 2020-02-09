@@ -32,6 +32,8 @@ public:
 
     void setAudioChannel(AudioChannel *audio_channel);
 
+    void stop();
+
 private:
     pthread_t pid_video_decode;
     pthread_t pid_video_play;

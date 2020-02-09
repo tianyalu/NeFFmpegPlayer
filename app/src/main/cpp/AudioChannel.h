@@ -35,6 +35,8 @@ public:
     int out_buffers_size;
     uint8_t *out_buffers = 0;
 
+    void stop();
+
 private:
     pthread_t pid_audio_decode;
     pthread_t pid_audio_play;

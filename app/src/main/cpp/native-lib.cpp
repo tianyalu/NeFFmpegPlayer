@@ -82,13 +82,23 @@ Java_com_sty_ne_ffmpegplayer_NeFFmpegPlayer_startNative(JNIEnv *env, jobject thi
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_sty_ne_ffmpegplayer_NeFFmpegPlayer_stopNative(JNIEnv *env, jobject thiz) {
-    // TODO: implement stopNative()
+    if(player) {
+        player->stop();
+    }
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_sty_ne_ffmpegplayer_NeFFmpegPlayer_releaseNative(JNIEnv *env, jobject thiz) {
-    // TODO: implement releaseNative()
+    pthread_mutex_lock(&mutex);
+    //先释放之前的显示窗口
+    if(window) {
+        ANativeWindow_release(window);
+        window = 0;
+    }
+    //创建新的窗口用于视频显示
+    pthread_mutex_unlock(&mutex);
+    DELETE(player);
 }
 
 extern "C"
@@ -106,4 +116,22 @@ Java_com_sty_ne_ffmpegplayer_NeFFmpegPlayer_setSurfaceNative(JNIEnv *env, jobjec
 
     pthread_mutex_unlock(&mutex);
 
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_sty_ne_ffmpegplayer_NeFFmpegPlayer_getDurationNative(JNIEnv *env, jobject thiz) {
+    if(player) {
+        return player->getDuration();
+    }
+    return 0;
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_sty_ne_ffmpegplayer_NeFFmpegPlayer_seekNative(JNIEnv *env, jobject thiz,
+                                                       jint play_progress) {
+    if(player) {
+        player->seek(play_progress);
+    }
 }

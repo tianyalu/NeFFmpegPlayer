@@ -18,12 +18,15 @@ public:
 
     void onError(int thread_mode, char* err_msg, int err_code);
 
+    void onProgress(int thread_mode, int progress);
+
 private:
     JavaVM *javaVm = 0;
     JNIEnv *env = 0;
     jobject instance;
     jmethodID jmd_prepared;
     jmethodID jmd_on_error;
+    jmethodID jmd_onProgress;
 };
 
 

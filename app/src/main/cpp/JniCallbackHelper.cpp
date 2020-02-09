@@ -13,6 +13,7 @@ JniCallbackHelper::JniCallbackHelper(JavaVM *javaVm, JNIEnv *env, jobject instan
     jclass clazz = env->GetObjectClass(this->instance);
     jmd_prepared = env->GetMethodID(clazz, "onPrepared", "()V"); //javap 可以获取方法签名
     jmd_on_error = env->GetMethodID(clazz, "onError", "(Ljava/lang/String;I)V"); //javap 可以获取方法签名
+    jmd_onProgress = env->GetMethodID(clazz, "onProgress", "(I)V");
 }
 
 JniCallbackHelper::~JniCallbackHelper() {
@@ -45,6 +46,19 @@ void JniCallbackHelper::onError(int thread_mode, char *err_msg, int err_code) {
         javaVm->AttachCurrentThread(&env_child, 0);
         jstring errMsg = env_child->NewStringUTF(err_msg);
         env_child->CallVoidMethod(instance, jmd_on_error, errMsg, err_code);
+        javaVm->DetachCurrentThread();
+    }
+}
+
+void JniCallbackHelper::onProgress(int thread_mode, int progress) {
+    if(thread_mode == THREAD_MAIN) {
+        //主线程
+        env->CallVoidMethod(instance, jmd_onProgress, progress);
+    } else {
+        //子线程
+        JNIEnv *env_child;
+        javaVm->AttachCurrentThread(&env_child, 0);
+        env_child->CallVoidMethod(instance, jmd_onProgress, progress);
         javaVm->DetachCurrentThread();
     }
 }

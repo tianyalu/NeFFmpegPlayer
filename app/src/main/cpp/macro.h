@@ -11,6 +11,8 @@
 #define LOGE(FORMAT,...) __android_log_print(ANDROID_LOG_ERROR, "sty", FORMAT, ## __VA_ARGS__);
 #define LOGE2(...) __android_log_print(ANDROID_LOG_ERROR, "NEPLAYER_NATIVE",__VA_ARGS__)
 
+#define DELETE(object) if (object) { delete object; object = 0; }
+
 //错误代码
 #define ERROR_CODE_OK 0
 #define ERROR_CODE_FFMPEG_PREPARE -1000
@@ -33,5 +35,8 @@
 
 //读取媒体数据包失败
 #define FFMPEG_READ_PACKETS_FAIL (ERROR_CODE_FFMPEG_PLAY - 1)
+
+//拖动SeekBar失败
+#define FFMPEG_SEEK_FAIL (ERROR_CODE_FFMPEG_PLAY - 2)
 
 #endif //NEFFMPEGPLAYER_MACRO_H
