@@ -20,6 +20,8 @@ NeFFmpegPlayer::NeFFmpegPlayer(const char *data_source, JniCallbackHelper *jni_c
 
     this->jni_callback_helper = jni_callback_helper;
     pthread_mutex_init(&seek_mutex, 0);
+    pthread_mutex_init(&pause_mutex, 0);
+    pthread_mutex_init(&continue_mutex, 0);
 }
 
 NeFFmpegPlayer::~NeFFmpegPlayer() {
@@ -30,6 +32,8 @@ NeFFmpegPlayer::~NeFFmpegPlayer() {
     DELETE(data_source);
     DELETE(jni_callback_helper);
     pthread_mutex_destroy(&seek_mutex);
+    pthread_mutex_destroy(&pause_mutex);
+    pthread_mutex_destroy(&continue_mutex);
 }
 
 void *task_prepare(void *args) {
@@ -162,12 +166,14 @@ void NeFFmpegPlayer::_prepare() {
 
             video_channel = new VideoChannel(i, codecContext, time_base, fps);
             video_channel->setRenderCallback(renderCallback);
+            
             if(mDuration != 0) { //直播不需要回调进度
                 video_channel->setJniCallbackHelper(jni_callback_helper);
             }
         }else if (codecParameters->codec_type == AVMEDIA_TYPE_AUDIO) {
             //音频流
             audio_channel = new AudioChannel(i, codecContext, time_base);
+            
             if(mDuration != 0) { //直播不需要回调进度
                 audio_channel->setJniCallbackHelper(jni_callback_helper);
             }
@@ -346,6 +352,34 @@ void NeFFmpegPlayer::stop() {
         audio_channel->jni_callback_helper = 0;
     }
     pthread_create(&pid_stop, 0, task_stop, this);
+}
+
+void NeFFmpegPlayer::pausePlay() {
+    pthread_mutex_lock(&pause_mutex);
+    if(!video_channel && !audio_channel) {
+        return;
+    }
+    if(video_channel) {
+        video_channel->pausePlay();
+    }
+    if(audio_channel) {
+        audio_channel->pausePlay();
+    }
+    pthread_mutex_unlock(&pause_mutex);
+}
+
+void NeFFmpegPlayer::continuePlay() {
+    pthread_mutex_lock(&continue_mutex);
+    if(!video_channel && !audio_channel) {
+        return;
+    }
+    if(video_channel) {
+        video_channel->start();
+    }
+    if(audio_channel) {
+        audio_channel->start();
+    }
+    pthread_mutex_unlock(&continue_mutex);
 }
 
 

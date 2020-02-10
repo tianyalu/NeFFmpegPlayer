@@ -41,6 +41,14 @@ public class NeFFmpegPlayer implements SurfaceHolder.Callback {
         stopNative();
     }
 
+    public void pause() {
+        pauseNative();
+    }
+
+    public void continuePlay() {
+        continuePlayNative();
+    }
+
     /**
      * 释放资源
      */
@@ -67,7 +75,9 @@ public class NeFFmpegPlayer implements SurfaceHolder.Callback {
             onPreparedListener.onPrepared();
         }
     }
-
+    /**
+     * 给JNI反射调用的
+     */
     public void onError(String msg, int errCode) {
         if(onErrorListener != null) {
             onErrorListener.onError(msg, errCode);
@@ -141,10 +151,16 @@ public class NeFFmpegPlayer implements SurfaceHolder.Callback {
         void onProgress(int progress);
     }
 
+    interface OnEndListener {
+        void onEnd();
+    }
+
     //native 方法
     private native void prepareNative(String dataSource);
     private native void startNative();
     private native void stopNative();
+    private native void pauseNative();
+    private native void continuePlayNative();
     private native void releaseNative();
     private native void setSurfaceNative(Surface surface);
     private native int getDurationNative();

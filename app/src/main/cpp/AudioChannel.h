@@ -37,6 +37,8 @@ public:
 
     void stop();
 
+    void pausePlay();
+
 private:
     pthread_t pid_audio_decode;
     pthread_t pid_audio_play;

@@ -44,6 +44,10 @@ public:
 
     void stop();
 
+    void pausePlay();
+
+    void continuePlay();
+
 private:
     char* data_source = 0;
     pthread_t pid_prepare;
@@ -57,6 +61,8 @@ private:
     int mDuration;
     RenderCallback renderCallback;
     pthread_mutex_t seek_mutex;
+    pthread_mutex_t pause_mutex;
+    pthread_mutex_t continue_mutex;
 };
 
 

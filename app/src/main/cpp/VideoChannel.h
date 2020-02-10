@@ -34,6 +34,8 @@ public:
 
     void stop();
 
+    void pausePlay();
+
 private:
     pthread_t pid_video_decode;
     pthread_t pid_video_play;

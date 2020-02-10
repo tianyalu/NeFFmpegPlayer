@@ -141,6 +141,9 @@ void VideoChannel::video_play() {
 
         if(!audio_channel) { //没音频
             av_usleep(real_delay *  1000000);
+            if(jni_callback_helper) {
+                jni_callback_helper->onProgress(THREAD_CHILD, video_time);
+            }
         } else {
             //以音频的时间为基准
             double audio_time = audio_channel->audio_time;
@@ -173,6 +176,7 @@ void VideoChannel::video_play() {
 
         releaseAVFrame(&frame); //内存泄漏的关键原因之一
     }
+
     releaseAVFrame(&frame);
     isPlaying = 0;
     av_freep(&dst_data[0]);
@@ -206,6 +210,12 @@ void VideoChannel::stop() {
     frames.setWork(0);
     pthread_join(pid_video_decode, 0);
     pthread_join(pid_video_play, 0);
+}
+
+void VideoChannel::pausePlay() {
+    isPlaying = 0;
+    packets.setWork(0);
+    frames.setWork(0);
 }
 
 

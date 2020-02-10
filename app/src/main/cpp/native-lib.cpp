@@ -135,3 +135,19 @@ Java_com_sty_ne_ffmpegplayer_NeFFmpegPlayer_seekNative(JNIEnv *env, jobject thiz
         player->seek(play_progress);
     }
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_sty_ne_ffmpegplayer_NeFFmpegPlayer_pauseNative(JNIEnv *env, jobject thiz) {
+    if(player) {
+        player->pausePlay();
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_sty_ne_ffmpegplayer_NeFFmpegPlayer_continuePlayNative(JNIEnv *env, jobject thiz) {
+    if(player) {
+        player->continuePlay();
+    }
+}

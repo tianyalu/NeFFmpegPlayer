@@ -303,6 +303,12 @@ void AudioChannel::stop() {
     }
 }
 
+void AudioChannel::pausePlay() {
+    isPlaying = 0;
+    packets.setWork(0);
+    frames.setWork(0);
+}
+
 
 
 
