@@ -159,8 +159,8 @@ void VideoChannel::video_play() {
                 //视频比音频慢，追音频（丢帧）
                 //画面延时了
                 if(fabs(time_diff) >= 0.05 ) {
-                    //packets.sync(); //todo 目前实测该种方式存在花屏和卡顿现象
-                    frames.sync();
+                    packets.sync(); //todo 目前实测该种方式存在花屏和卡顿现象
+                    //frames.sync();
                     continue;
                 }
             }else {

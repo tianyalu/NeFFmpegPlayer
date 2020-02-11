@@ -20,7 +20,9 @@ import java.io.File;
 public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener, View.OnClickListener {
     private static final String DIR_PATH = Environment.getExternalStorageDirectory()
 //            + File.separator + "sty" + File.separator + "input.mp4";
-            + File.separator + "视频/dance/sandymandy" + File.separator + "[牛人]Whatcha Doin' Today_超清.mp4";
+//            + File.separator + "sty" + File.separator + "chengdu.mp4";
+//            + File.separator + "视频/dance/sandymandy" + File.separator + "[牛人]Whatcha Doin' Today_超清.mp4";
+            + File.separator + "视频/dance/sandymandy" + File.separator + "4Minute - Hate by Sandy Mandy_超清.mp4";
     private String[] needPermissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     private static final int STATUS_STOP = 0;
@@ -241,15 +243,18 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 //        }
     }
 
+
     @Override
     protected void onStop() {
         super.onStop();
         player.stop();
+//        pauseVideo();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+//        player.stop();
         player.release();
     }
 

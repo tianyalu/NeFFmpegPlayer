@@ -619,3 +619,9 @@ void JniCallbackHelper::onError(int thread_mode, char *err_msg) {
     }
 }
 ```
+
+## 三、遗留问题
+### 3.1 `packets.sync();` 存在花屏和卡顿现象
+### 3.2 拖动进度条有时候也会出现花屏和卡顿现象
+### 3.3 正在播放时返回桌面，然后再点击icon进入出现白屏或黑屏
+
