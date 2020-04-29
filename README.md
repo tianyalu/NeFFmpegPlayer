@@ -1,6 +1,9 @@
 # NeFFmpegPlayer FFmpeg播放器-项目框架搭建
 ## 一、前言
-### 1.1 遇到问题可参考：
+### 1.1 说明
+* 支持`librtmp` 的`ffmpeg` 编译教程参考：[Linux环境下 FFmpeg 编译 with rtmp](https://github.com/tianyalu/NeShellFFmpegCompilation/blob/master/FFmpeg_with_rtmp.md)  
+* 可用的直播推流测试源：`rtmp://58.200.131.2:1935/livetv/hunantv`  
+### 1.2 遇到问题可参考：
 [最新版本FFmpeg编译(基于v4.2.1)](https://www.jianshu.com/p/212c61cac89c)  
 [ffmpeg 编译&集成问题汇总](https://www.jianshu.com/p/c413873350a2)  
 [JNI基础](https://www.jianshu.com/p/e3bcff7e3b24)  
