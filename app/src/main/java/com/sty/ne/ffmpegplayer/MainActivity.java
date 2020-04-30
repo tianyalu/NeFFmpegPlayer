@@ -18,15 +18,18 @@ import com.sty.ne.ffmpegplayer.util.PermissionUtils;
 import java.io.File;
 
 public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener, View.OnClickListener {
-    private static final String DIR_PATH = "rtmp://58.200.131.2:1935/livetv/hunantv";
 
-    //    private static final String DIR_PATH = Environment.getExternalStorageDirectory()
-//            + File.separator + "sty" + File.separator + "input.mp4";
+        private static final String DIR_PATH = Environment.getExternalStorageDirectory()
+            + File.separator + "sty" + File.separator + "input.mp4";
 
 //            + File.separator + "sty" + File.separator + "input_crop.mp4";
 //            + File.separator + "sty" + File.separator + "chengdu.mp4";
 //            + File.separator + "视频/dance/sandymandy" + File.separator + "[牛人]Whatcha Doin' Today_超清.mp4";
 //            + File.separator + "视频/dance/sandymandy" + File.separator + "4Minute - Hate by Sandy Mandy_超清.mp4";
+
+    private static final String srcUrl = "rtmp://58.200.131.2:1935/livetv/hunantv";
+//    private static final String srcUrl = new File(DIR_PATH).getAbsolutePath();
+
     private String[] needPermissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     private static final int STATUS_STOP = 0;
@@ -66,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
         player = new NeFFmpegPlayer();
         player.setSurfaceView(surfaceView);
-        player.setDataSource(new File(DIR_PATH).getAbsolutePath());
+        player.setDataSource(srcUrl);
     }
 
     private void setListener() {

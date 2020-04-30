@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.4.1)
 
 set(ffmpeg ${CMAKE_SOURCE_DIR}/ffmpeg)
+set(rtmp ${CMAKE_SOURCE_DIR}/rtmp)
 include_directories(${ffmpeg}/include)  # path;%JAVA_HOME%
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${ffmpeg}/libs/${CMAKE_ANDROID_ARCH_ABI}") #追加
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${rtmp}/libs/${CMAKE_ANDROID_ARCH_ABI}") #追加
 
 file(GLOB src_files *.cpp)
 
@@ -18,6 +20,7 @@ target_link_libraries( # Specifies the target library.
         -Wl,--end-group
         z
         log # liblog.so
+        rtmp
         android # libandroid.so
         OpenSLES
         )
