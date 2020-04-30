@@ -57,4 +57,19 @@
             android:text="fullscreen"
             android:textAllCaps="false"/>
     </LinearLayout>
+
+    <EditText
+        android:id="@+id/et_url"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="32dp"/>
+
+    <Button
+        android:id="@+id/btn_change_url"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="change url"
+        android:textAllCaps="false"/>
 </LinearLayout>

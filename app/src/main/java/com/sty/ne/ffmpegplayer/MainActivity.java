@@ -9,6 +9,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,15 +20,20 @@ import java.io.File;
 
 public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener, View.OnClickListener {
 
-        private static final String DIR_PATH = Environment.getExternalStorageDirectory()
-            + File.separator + "sty" + File.separator + "input.mp4";
-
-//            + File.separator + "sty" + File.separator + "input_crop.mp4";
-//            + File.separator + "sty" + File.separator + "chengdu.mp4";
-//            + File.separator + "视频/dance/sandymandy" + File.separator + "[牛人]Whatcha Doin' Today_超清.mp4";
-//            + File.separator + "视频/dance/sandymandy" + File.separator + "4Minute - Hate by Sandy Mandy_超清.mp4";
+    private static final String DIR_PRE = Environment.getExternalStorageDirectory().getAbsolutePath();
 
     private static final String srcUrl = "rtmp://58.200.131.2:1935/livetv/hunantv";
+
+    private static final String DIR_PATH1 = DIR_PRE + File.separator + "视频/dance/sandymandy"
+            + File.separator + "[牛人]Whatcha Doin' Today_超清.mp4";
+    private static final String DIR_PATH2 = DIR_PRE + File.separator + "视频/dance/sandymandy"
+            + File.separator + "4Minute - Hate by Sandy Mandy_超清.mp4";
+    private static final String DIR_PATH3 = DIR_PRE + File.separator + "sty" + File.separator + "input.mp4";
+    private static final String DIR_PATH4 = DIR_PRE + File.separator + "sty" + File.separator + "input_crop.mp4";
+    private static final String DIR_PATH5 = DIR_PRE + File.separator + "sty" + File.separator + "chengdu.mp4";
+    private static final String[] srcUrls = {srcUrl, DIR_PATH1, DIR_PATH2, DIR_PATH3, DIR_PATH4, DIR_PATH5};
+
+
 //    private static final String srcUrl = new File(DIR_PATH).getAbsolutePath();
 
     private String[] needPermissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
@@ -47,6 +53,10 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     private boolean isTouch; //用户是否拖拽了进度条
     private boolean isSeek; //是否seek
     private int mDuration = 0; //视频总时长
+    private EditText etUrl;
+    private Button btnChangeUrl;
+
+    private int urlIndex = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,10 +76,14 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         btnPlayOrPause = findViewById(R.id.btn_play_or_pause);
         btnStop = findViewById(R.id.btn_stop);
         btnFullScreen = findViewById(R.id.btn_full_screen);
+        etUrl = findViewById(R.id.et_url);
+        btnChangeUrl = findViewById(R.id.btn_change_url);
+
+        etUrl.setText(srcUrls[urlIndex]);
 
         player = new NeFFmpegPlayer();
         player.setSurfaceView(surfaceView);
-        player.setDataSource(srcUrl);
+//        player.setDataSource(etUrl.getText().toString());
     }
 
     private void setListener() {
@@ -77,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         btnPlayOrPause.setOnClickListener(this);
         btnStop.setOnClickListener(this);
         btnFullScreen.setOnClickListener(this);
+        btnChangeUrl.setOnClickListener(this);
         player.setOnPreparedListener(new NeFFmpegPlayer.OnPreparedListener() {
             @Override
             public void onPrepared() {
@@ -153,9 +168,16 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             case R.id.btn_full_screen:
                 Toast.makeText(this, "待完善", Toast.LENGTH_SHORT).show();
                 break;
+            case R.id.btn_change_url:
+                onBtnChangeUrlClicked();
             default:
                 break;
         }
+    }
+
+    private void onBtnChangeUrlClicked() {
+        urlIndex++;
+        etUrl.setText(srcUrls[urlIndex % 6]);
     }
 
     private void onBtnPlayOrPauseClicked() {
@@ -203,6 +225,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     private void playVideo() {
         if (status == STATUS_STOP && player != null) {
             try {
+                player.setDataSource(etUrl.getText().toString());
                 player.prepare();
                 status = STATUS_PLAY;
                 btnPlayOrPause.setText("pause");
